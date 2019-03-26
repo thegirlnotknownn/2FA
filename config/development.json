@@ -1,0 +1,17 @@
+{
+    "host": "localhost",
+    "PORT": 3344,
+    "url": "http://localhost:3344",
+    "db": "mongodb://localhost/live",
+    "corsAllowedDomains": "*",
+    "tokenSecret": "f@1edszlCSAy5%ÃXCVr623gjmkmslcmš21%^2scb2",
+    "tokenPrefix": "Bearer",
+    "mail": {
+      "email": "testing@gmail.com",
+      "password": "testing@123",
+      "host": "smtp.gmail.com",
+      "port": 465,
+      "secure": true
+    }
+  }
+  

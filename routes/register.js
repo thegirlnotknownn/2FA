@@ -121,7 +121,7 @@ router.post('/verify',function(req,res){
     console.log(phoneNumber);
     nexmo.verify.request({
         number: phoneNumber,
-        brand:'Nexmo',
+        brand:'Amisha here!',
         code_length:4
     }, function(err,result){
         if (err) {console.log(err);}

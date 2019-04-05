@@ -1,157 +1,157 @@
-const express = require('express');
-const router = express.Router();
-const User = require('../models/userinfo');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const flash = require('connect-flash');
+const config = require('config')
+
+const express = require('express')
+const router = express.Router()
+const passport = require('passport')
 const Nexmo = require('nexmo');
 
+// set the response right on the main screen not the js re.. if validation problem
+
+const NEXMO_API_KEY = config.get('Nexmo.API_KEY')
+const NEXMO_API_SECRET = config.get('Nexmo.API_SECRET')
+const NEXMO_BRAND_NAME = config.get('Nexmo.BRAND_NAME')
 const nexmo = new Nexmo({
-    apiKey: 'f5a5d698',
-    apiSecret: 'wduqfvzGJkG4cH1B'
-});
-
-router.get('/signin', function(req,res){
-    res.render('signin',{
-        title: 'SIGNIN'
-    });
-});
-
-router.get('/signup', function(req,res){
-    res.render('signup',{
-        title: 'SIGNUP'
-    });
-});
-
-router.get('/verify',function(req,res){
-    res.render('verify',{
-        title: 'Verify!'
-    });
-});
-
-router.get('/logout',function(req,res){
-    req.logout();
-    res.redirect('/');
+  apiKey: NEXMO_API_KEY,
+  apiSecret: NEXMO_API_SECRET
 })
 
-passport.use(new LocalStrategy(
-    function(username,password,done){
-        User.getUserByUsername(username,function(err,user){
-            if (err) {return done(err);}
-            if(!user){
-                return done(null,false,{message:'Incorrect username'});
-            }
-           User.comparePassword(password,user.password,function(err,isMatch){
-               if (err) throw err;
-               if(isMatch){
-                   return done(null,user);
-               }else{
-                   return done(null,false,{message:'Incorrect Password'});
-               }
-           })
-        });
-    }
-));
+const verifyRequestId = null;
+const verifyRequestNumber = null;
 
-passport.serializeUser(function(user,done){
-    var sessionUser = {
-        _id:user._id,
-        name:user.name,
-        email:user.email,
-        password:user.password,
-        username:user.username
-    }
-    done(null,user.id);
+const User = require('../models/user')
+const __ = require('../helpers/response')
+
+// get signin page 
+router.get('/signin', (req,res) => {
+    res.render('signin')
+})
+
+router.get('/signup', (req,res) => {
+    res.render('signup') 
+})
+
+router.post('/signup', (req,res,next) => {
+    var name = req.body.name;
+    var username = req.body.username;
+    var password = req.body.password;
+    var password2 = req.body.password2;
+    var email = req.body.email;
+    const country_code = req.body.code
+    const phone =req.body.phone
+
+	// ADD MORE VALIDATIONS
+    // Validation
+    req.checkBody('name', 'Name is required').notEmpty()
+	req.checkBody('email', 'Email is required').notEmpty()
+	req.checkBody('email', 'Email is not valid').isEmail()
+	req.checkBody('username', 'Username is required').notEmpty()
+    req.checkBody('password', 'Password is required').notEmpty()
+    req.checkBody('password2','Confirm your password').notEmpty()
+    req.checkBody('password','Min length required is 6 characters').isLength({min: 5})
+    req.checkBody('password2', 'Passwords do not match').equals(password)
+    // put regex validation as well and whatever error is show it on the main screen
+
+    var errors = req.validationErrors()
+
+    if (errors) {
+        __.error(res,errors) //check it!
+	}
+	else {
+		User.findOne({ $or:[{username: username} || {email: email} ]}, (err, user) => {
+			if (user) {
+				__.Found(res, 'You\'re already registered')
+			}
+			else {
+				const newUser = new User({
+                    name: name,
+                    username: username,
+                    password: password,
+                    email: email,
+                    phone: phone,
+                    country_code:country_code,
+                    authyId: null
+                })
+                console.log(newUser)
+				User.createUser(newUser, function (err, user) {
+                    if (err) {
+                        console.log(err)
+                      return  __.error(res, err) 
+                    }   
+                     res.redirect('/register/signin');
+                })
+			}
+		})
+	}
 });
 
-passport.deserializeUser(function(id,done){
-    User.getUserById(id,function(err,user){
-        done(err,user);
-    });
-});
-
-router.post('/signup', function(req,res){
-
-    const name = req.body.name;
-    const email = req.body.email;
-    const password = req.body.password;
-    const username = req.body.username;
-    const password2 = req.body.password2;
-
-    User.findOne({username:{
-        "$regex":"^" + username + "\\b", "$options": "i"
-    }}, function(err,user){
-        User.findOne({email:{
-        "$regex":"^" + email + "\\b", "$options":"i"
-    }},function(err,mail){
-        if(user || mail){
-            res.render('signup',{
-                user:user,
-                mail:mail
-            });
-        }else{
-            var newUser = new User({
-                name:name,
-                email:email,
-                password:password,
-                username:username
-            });
-            User.createUser(newUser,function(err,user){
-                if (err) throw err;
-            });
-            res.redirect('/register/signin');
-        }
-    });
-
-    var newUser = new User({
-        name:req.body.name,
-        email:req.body.email,
-        password:req.body.password,
-        username:req.body.username
-    });
-    });
-});
-
-router.post('/signin',passport.authenticate('local',{successRedirect:'/register/verify', failureRedirect:'/register/signin',failureFlash:true}),function(req,res){
-    console.log('?');
-});
-
-router.post('/verify',function(req,res){
-    let phoneNumber = req.body.number;
-    console.log(phoneNumber);
-    nexmo.verify.request({
-        number: phoneNumber,
-        brand:'Amisha here!',
-        code_length:4
-    }, function(err,result){
-        if (err) {console.log(err);}
-        else{
-            let requestId = result.request_id;
-            console.log('request_id', requestId);
-            if(result.status == '0'){
-                res.render('verify2',{requestId:requestId});
-            }else{
-                res.status(401).send(result.error_text)
-            }
-        }
+router.post('/signin', passport.authenticate('local',{failureRedirect:'/register/login', failureFlash: true}),(req,res,next) => {
+    const username = req.body.username
+    
+    if (!req.body.remember_me) { return next()}
+    const token = utils.generateToken(64)
+    Token.save(token, {userId: req.user.id}, (err) => {
+        if (err) return done(err)
+        res.cookie('remember_me', token, {
+            path:'/', 
+            httpOnly:true, 
+            maxAge: 604800000
+        })
+        return next()
     })
-});
 
-router.post('/verify2', function(req,res){
-    let  pin = req.body.pin;
-    let requestId = req.body.requestId;
-    // pin expiry? add
-    nexmo.verify.check({request_id:requestId,code:pin},function(err,result){
-        if(err) console.log(err)
-        else{
-            if(result && result.status == '0'){
-                res.redirect('/profile');
-            }else{
-                console.log(err);
+    User.findOne({username: username}, (err, user) =>{
+        if (err) return res.json(err)
+        nexmo.verify.request({
+            number: user.phone,
+            brand: NEXMO_BRAND_NAME
+          }, (err, result) => {
+            if (err) {
+              console.error(err);
+            } else {
+              const verifyRequestId = result.request_id;
+            //   console.log('request_id', verifyRequestId);
+                res.render('verify',
+                {requestId: verifyRequestId
+                });
+            }
+          });  
+    }) 
+})
+
+router.post('/checkcode', (req, res) => {
+    // Check the code provided by the user
+    const pin = req.body.code
+    const verifyRequestId = req.body.requestId
+    nexmo.verify.check({
+        request_id: verifyRequestId,
+        code: pin
+    }, (err, result) => {
+        if (err) {
+            console.error(err)
+        } else {
+            if (result && result.status == 0) {
+                /* 
+                    User provided correct code,
+                    so create a session for that user
+                */
+                req.session.user = {
+                    phone: verifyRequestNumber
+                }
+
+                        // Redirect to the home page
+        res.redirect('/profile');
+            } else{
+                res.json('otp error')
             }
         }
+
     });
 });
 
+router.get('/logout', (req,res) => {
+    req.logout()
+    // req.session.destroy()
+    res.redirect('/')
+})
 
-module.exports = router;
+module.exports = router

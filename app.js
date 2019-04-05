@@ -1,43 +1,102 @@
-const express = require('express');
-const app = express();
-const http = require('http');
-const path = require('path');
-const bodyParser = require('body-parser');
-const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
-const Nexmo = require('nexmo');
+console.log('Starting Environment - ' + process.env.NODE_ENV)
+NODE_TLS_REJECT_UNAUTHORIZED=0 //why?
 
-const mongoose = require('mongoose');
-mongoose.connect("mongodb://localhost:27017/2FA", { useNewUrlParser:true });
-mongoose.Promise = global.Promise;
-const db = mongoose.connection;
-db.on('error', console.error.bind(console, 'Mongo Connection Error!'));
+const config = require('config')
 
-const register = require('./routes/register');
-const profile = require('./routes/profile');
+const express = require('express')
+const cors = require('cors')
+const winston = require('winston')
+const expressWinston = require('express-winston')
+const helmet = require('helmet')
+const mongoSanitize = require('express-mongo-sanitize')
+const bodyParser = require('body-parser')
+const cookieParser = require('cookie-parser')//morgan?
+const session = require('express-session')
+const path = require('path')
+const passport = require('passport')
+const flash = require('connect-flash')
+const expressValidator = require('express-validator')
 
-app.set('views',path.join(__dirname, 'views'));
-app.set('view engine','ejs');
+const app = express()
+// how to use import export?
 
-app.get('/', function(req,res){
-    res.render('index',{
-        title: 'INDEX'
-    });
-});
+const db = require('./helpers/db')
+const __ = require('./helpers/response')
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({extended:true}));
-app.use(passport.initialize());
-app.use(passport.session());
+// routes
+const index = require('./routes/index')
+const register = require('./routes/register')
+const profile = require('./routes/profile')
+
+// passport configuration
+require('./config/passport')(passport)
+
+// set view engine
+app.set('views',path.join(__dirname, 'views'))
+app.set('view engine','ejs')
+
+app.use(bodyParser.json()) // With or without {}
+app.use(bodyParser.urlencoded({extended:false}))
+
+app.use(mongoSanitize())
+app.use(cookieParser())
+app.use(
+    session({
+        secret: 'secret',//config.SECRET,
+        resave: true,
+        saveUninitialized: true
+    })
+)
+
+app.use(expressValidator({
+    errorFormatter: function(param, msg, value) /*  */{
+        var namespace = param.split('.')
+        , root    = namespace.shift()
+        , formParam = root;
+  
+      while(namespace.length) {
+        formParam += '[' + namespace.shift() + ']';
+      }
+      return {
+        param : formParam,
+        msg   : msg,
+        value : value
+      };
+    }
+}));
 
 
+app.use(expressWinston.logger({
+    transports: [
+        new winston.transports.Console({
+            json: false, //true for details
+            colorize: true,
+            timestamp: false // earlier true check
+        })
+    ]
+}))
 
-app.use('/register',register);
-app.use('/profile',profile);
+db.connectMongo()
 
-const port = (process.env.PORT || 3000);
-app.set('port',port);
-const server = http.createServer(app);
-server.listen(port, function(){
-    console.log(`Server up and running on port ${port}`);
-});
+const corsOptions = {
+    origin: config.get('corsAllowedDomains')
+}
+// mongoSanitize?
+
+app.use(cors(corsOptions))
+app.use(helmet())
+
+app.use(flash())
+app.use(passport.initialize())
+app.use(passport.session())
+app.use(passport.authenticate('remember-me'))
+
+app.use('/',index)
+app.use('/register',register)
+app.use('/profile',profile)
+
+app.use((req, res, next) => {
+    __.notFound(res, 'Wrong page URL')
+})
+
+module.exports = app

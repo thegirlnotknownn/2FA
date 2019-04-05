@@ -1,17 +1,13 @@
 {
     "host": "localhost",
-    "PORT": 3344,
+    "PORT": 3000, 
     "url": "http://localhost:3344",
-    "db": "mongodb://localhost/live",
+    "db": "mongodb://localhost/2FA2",
     "corsAllowedDomains": "*",
-    "tokenSecret": "f@1edszlCSAy5%ÃXCVr623gjmkmslcmš21%^2scb2",
-    "tokenPrefix": "Bearer",
-    "mail": {
-      "email": "testing@gmail.com",
-      "password": "testing@123",
-      "host": "smtp.gmail.com",
-      "port": 465,
-      "secure": true
-    }
-  }
+    "Nexmo": {
+        "API_KEY": "f5a5d698",
+        "API_SECRET": "wduqfvzGJkG4cH1B",
+        "BRAND_NAME": "Amisha's 2FA"
+    } 
+}
   

@@ -1,5 +1,4 @@
 const LocalStrategy = require('passport-local').Strategy
-const RememberMeStrategy = require('../..').Strategy
 
 const User = require('../models/user')
 // add auth for fb,google and all
@@ -43,20 +42,4 @@ module.exports = (passport) => {
         })
     })
     
-    passport.use(new RememberMeStrategy(
-        (token, done) => {
-            Token.consume(token, (err, user) => {
-                if (err) return done(err)
-                if(!user) return done(null, false)
-                return done(null, user)
-            })
-        }, (user, done) => {
-            const token = utils.generateToken(64)
-            Token.save(token, {userId: user.id}, (err) => {
-                if (err) return done(err)
-                return done(null, token)
-            })
-        }
-    ))
-
-};
+}

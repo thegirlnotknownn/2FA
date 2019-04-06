@@ -3,7 +3,7 @@ const config = require('config')
 const express = require('express')
 const router = express.Router()
 const passport = require('passport')
-const Nexmo = require('nexmo');
+const Nexmo = require('nexmo')
 
 // set the response right on the main screen not the js re.. if validation problem
 
@@ -77,12 +77,12 @@ router.post('/signup', (req,res,next) => {
                         console.log(err)
                       return  __.error(res, err) 
                     }   
-                     res.redirect('/register/signin');
+                     res.redirect('/register/signin')
                 })
 			}
 		})
 	}
-});
+})
 
 router.post('/signin', passport.authenticate('local',{failureRedirect:'/register/login', failureFlash: true}),(req,res,next) => {
     const username = req.body.username
@@ -112,9 +112,9 @@ router.post('/signin', passport.authenticate('local',{failureRedirect:'/register
             //   console.log('request_id', verifyRequestId);
                 res.render('verify',
                 {requestId: verifyRequestId
-                });
+                })
             }
-          });  
+        })
     }) 
 })
 
@@ -139,14 +139,13 @@ router.post('/checkcode', (req, res) => {
                 }
 
                         // Redirect to the home page
-        res.redirect('/profile');
+        res.redirect('/profile')
             } else{
                 res.json('otp error')
             }
         }
-
-    });
-});
+    })
+})
 
 router.get('/logout', (req,res) => {
     req.logout()

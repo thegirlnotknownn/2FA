@@ -49,7 +49,7 @@ app.use(
 )
 
 app.use(expressValidator({
-    errorFormatter: function(param, msg, value) /*  */{
+    errorFormatter: function(param, msg, value) {
         var namespace = param.split('.')
         , root    = namespace.shift()
         , formParam = root;
@@ -61,9 +61,9 @@ app.use(expressValidator({
         param : formParam,
         msg   : msg,
         value : value
-      };
+      }
     }
-}));
+}))
 
 
 app.use(expressWinston.logger({
@@ -81,7 +81,6 @@ db.connectMongo()
 const corsOptions = {
     origin: config.get('corsAllowedDomains')
 }
-// mongoSanitize?
 
 app.use(cors(corsOptions))
 app.use(helmet())

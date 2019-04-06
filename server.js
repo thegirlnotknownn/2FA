@@ -1,4 +1,4 @@
-const config = require('config');
+const config = require('config')
 
 isDevelopment = () => {
     return process.env.NODE_ENV === 'development'

@@ -1,5 +1,7 @@
 console.log('Starting Environment - ' + process.env.NODE_ENV)
-NODE_TLS_REJECT_UNAUTHORIZED=0 //why?
+
+// self-signed:certificate issue(not trusted): just for development mode
+NODE_TLS_REJECT_UNAUTHORIZED=0 // remove in production mode
 
 const config = require('config')
 
@@ -10,7 +12,7 @@ const expressWinston = require('express-winston')
 const helmet = require('helmet')
 const mongoSanitize = require('express-mongo-sanitize')
 const bodyParser = require('body-parser')
-const cookieParser = require('cookie-parser')//morgan?
+const cookieParser = require('cookie-parser')
 const session = require('express-session')
 const path = require('path')
 const passport = require('passport')
@@ -35,21 +37,21 @@ require('./config/passport')(passport)
 app.set('views',path.join(__dirname, 'views'))
 app.set('view engine','ejs')
 
-app.use(bodyParser.json()) // With or without {}
+app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
 
 app.use(mongoSanitize())
 app.use(cookieParser())
 app.use(
     session({
-        secret: 'secret',//config.SECRET,
+        secret: config.get('secret'),
         resave: true,
         saveUninitialized: true
     })
 )
 
 app.use(expressValidator({
-    errorFormatter: function(param, msg, value) {
+    errorFormatter: (param, msg, value) => {
         var namespace = param.split('.')
         , root    = namespace.shift()
         , formParam = root;
@@ -65,7 +67,6 @@ app.use(expressValidator({
     }
 }))
 
-
 app.use(expressWinston.logger({
     transports: [
         new winston.transports.Console({
@@ -77,7 +78,6 @@ app.use(expressWinston.logger({
 }))
 
 db.connectMongo()
-
 const corsOptions = {
     origin: config.get('corsAllowedDomains')
 }

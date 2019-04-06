@@ -4,6 +4,7 @@
     "url": "http://localhost:3344",
     "db": "mongodb://localhost/2FA2",
     "corsAllowedDomains": "*",
+    "secret": "secretbuddy",
     "Nexmo": {
         "API_KEY": "f5a5d698",
         "API_SECRET": "wduqfvzGJkG4cH1B",

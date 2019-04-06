@@ -26,6 +26,7 @@ router.get('/signin', (req,res) => {
     res.render('signin')
 })
 
+// get signup page
 router.get('/signup', (req,res) => {
     res.render('signup') 
 })
@@ -54,7 +55,7 @@ router.post('/signup', (req,res,next) => {
     var errors = req.validationErrors()
 
     if (errors) {
-        __.error(res,errors) //check it!
+        __.error(res,errors)
 	}
 	else {
 		User.findOne({ $or:[{username: username} || {email: email} ]}, (err, user) => {
@@ -68,11 +69,9 @@ router.post('/signup', (req,res,next) => {
                     password: password,
                     email: email,
                     phone: phone,
-                    country_code:country_code,
-                    authyId: null
+                    country_code:country_code
                 })
-                console.log(newUser)
-				User.createUser(newUser, function (err, user) {
+				User.createUser(newUser, (err, user) => {
                     if (err) {
                         console.log(err)
                       return  __.error(res, err) 
@@ -119,7 +118,6 @@ router.post('/signin', passport.authenticate('local',{failureRedirect:'/register
 })
 
 router.post('/checkcode', (req, res) => {
-    // Check the code provided by the user
     const pin = req.body.code
     const verifyRequestId = req.body.requestId
     nexmo.verify.check({
@@ -130,17 +128,11 @@ router.post('/checkcode', (req, res) => {
             console.error(err)
         } else {
             if (result && result.status == 0) {
-                /* 
-                    User provided correct code,
-                    so create a session for that user
-                */
                 req.session.user = {
                     phone: verifyRequestNumber
                 }
-
-                        // Redirect to the home page
-        res.redirect('/profile')
-            } else{
+            res.redirect('/profile')
+            } else {
                 res.json('otp error')
             }
         }

@@ -10,7 +10,7 @@ const userSchema = new Schema({
     },
     email:{
         type: String,
-        required: true, // 'Email is required',
+        required: true,
         trim: true,
         lowercase: true,
         unique: true,
@@ -18,12 +18,12 @@ const userSchema = new Schema({
     },
     password:{
         type: String,
-        required: true, // 'Password is required'
+        required: true,
     },
     username:{
         type: String,
         unique: true,
-        required: true, //'Username is required'
+        required: true,
         index: true
     },
     phone : {
@@ -42,28 +42,29 @@ const userSchema = new Schema({
 
 const User = mongoose.model('User',userSchema)
 
-User.createUser = function(newUser, callback){
-    bcrypt.genSalt(10, function(err, salt) {
-        bcrypt.hash(newUser.password, salt, function(err, hash) {
+User.createUser = (newUser, callback) => {
+    bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(newUser.password, salt, (err, hash) => {
             newUser.password = hash
             newUser.save(callback)
         })
     })
 } 
 
-User.getUserByUsername = function(username, callback){
+User.getUserByUsername = (username, callback) => {
     var query = {username: username}
     User.findOne(query, callback)
 }
 
-User.getUserById = function(id, callback){
+User.getUserById = (id, callback) => {
     User.findById(id, callback)
 }
 
-User.comparePassword = function(candidatePassword, hash, callback){
-    bcrypt.compare(candidatePassword, hash, function(err, isMatch) {
+User.comparePassword = (candidatePassword, hash, callback) => {
+    bcrypt.compare(candidatePassword, hash, (err, isMatch) => {
         if(err) return err
         callback(null, isMatch)
     })
 }
+
 module.exports = User

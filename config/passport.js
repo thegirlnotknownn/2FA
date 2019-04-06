@@ -4,14 +4,14 @@ const User = require('../models/user')
 
 module.exports = (passport) => {
     passport.use(new LocalStrategy(
-        function (username, password, done) {
-            User.getUserByUsername(username, function (err, user) {
+        (username, password, done) => {
+            User.getUserByUsername(username, (err, user) => {
                 if (err) return err
                 if (!user) {
                     return done(null, false, { message: 'Unknown User' })
                 }
     
-                User.comparePassword(password, user.password, function (err, isMatch) {
+                User.comparePassword(password, user.password, (err, isMatch) => {
                     if (err) return err
                     if (isMatch) {
                         return done(null, user)
@@ -22,7 +22,7 @@ module.exports = (passport) => {
             })
         }))
     
-    passport.serializeUser(function (user, done) {
+    passport.serializeUser( (user, done) => {
         var sessionUser = {
             _id: user._id,
             name: user.name,
@@ -35,8 +35,8 @@ module.exports = (passport) => {
         done(null, user.id)
     })
     
-    passport.deserializeUser(function (id, done) {
-        User.getUserById(id, function (err, user) {
+    passport.deserializeUser( (id, done) => {
+        User.getUserById(id, (err, user) => {
             done(err, user);
         })
     })   

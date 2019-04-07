@@ -1,8 +1,5 @@
 console.log('Starting Environment - ' + process.env.NODE_ENV)
 
-// self-signed:certificate issue(not trusted): just for development mode
-NODE_TLS_REJECT_UNAUTHORIZED=0 // remove in production mode
-
 const config = require('config')
 
 const express = require('express')
@@ -54,10 +51,10 @@ app.use(expressValidator({
     errorFormatter: (param, msg, value) => {
         var namespace = param.split('.')
         , root    = namespace.shift()
-        , formParam = root;
+        , formParam = root
   
       while(namespace.length) {
-        formParam += '[' + namespace.shift() + ']';
+        formParam += '[' + namespace.shift() + ']'
       }
       return {
         param : formParam,

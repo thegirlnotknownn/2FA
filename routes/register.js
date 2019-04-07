@@ -22,23 +22,23 @@ const User = require('../models/user')
 const __ = require('../helpers/response')
 
 // get signin page 
-router.get('/signin', (req,res) => {
+router.get('/signin', (req, res) => {
     res.render('signin')
 })
 
 // get signup page
-router.get('/signup', (req,res) => {
+router.get('/signup', (req, res) => {
     res.render('signup') 
 })
 
-router.post('/signup', (req,res,next) => {
-    var name = req.body.name;
-    var username = req.body.username;
-    var password = req.body.password;
-    var password2 = req.body.password2;
-    var email = req.body.email;
+router.post('/signup', (req, res, next) => {
+    var name = req.body.name
+    var username = req.body.username
+    var password = req.body.password
+    var password2 = req.body.password2
+    var email = req.body.email
     const country_code = req.body.code
-    const phone =req.body.phone
+    const phone = req.body.phone
 
 	// ADD MORE VALIDATIONS
     // Validation
@@ -68,8 +68,7 @@ router.post('/signup', (req,res,next) => {
                     username: username,
                     password: password,
                     email: email,
-                    phone: phone,
-                    country_code:country_code
+                    phone: phone
                 })
 				User.createUser(newUser, (err, user) => {
                     if (err) {
@@ -83,22 +82,12 @@ router.post('/signup', (req,res,next) => {
 	}
 })
 
-router.post('/signin', passport.authenticate('local',{failureRedirect:'/register/login', failureFlash: true}),(req,res,next) => {
+router.post('/signin', passport.authenticate('local', {
+    failureRedirect:'/register/login', 
+    failureFlash: true
+}), (req, res, next) => {
     const username = req.body.username
-    
-    if (!req.body.remember_me) { return next()}
-    const token = utils.generateToken(64)
-    Token.save(token, {userId: req.user.id}, (err) => {
-        if (err) return done(err)
-        res.cookie('remember_me', token, {
-            path:'/', 
-            httpOnly:true, 
-            maxAge: 604800000
-        })
-        return next()
-    })
-
-    User.findOne({username: username}, (err, user) =>{
+    User.findOne({username: username}, (err, user) => {
         if (err) return res.json(err)
         nexmo.verify.request({
             number: user.phone,
@@ -109,8 +98,8 @@ router.post('/signin', passport.authenticate('local',{failureRedirect:'/register
             } else {
               const verifyRequestId = result.request_id;
             //   console.log('request_id', verifyRequestId);
-                res.render('verify',
-                {requestId: verifyRequestId
+                res.render('verify', {
+                   requestId: verifyRequestId
                 })
             }
         })
@@ -139,7 +128,7 @@ router.post('/checkcode', (req, res) => {
     })
 })
 
-router.get('/logout', (req,res) => {
+router.get('/logout', (req, res) => {
     req.logout()
     // req.session.destroy()
     res.redirect('/')

@@ -38,7 +38,7 @@ app.set('views',path.join(__dirname, 'views'))
 app.set('view engine','ejs')
 
 app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended:false}))
+app.use(bodyParser.urlencoded({extended: false}))
 
 app.use(mongoSanitize())
 app.use(cookieParser())
@@ -70,7 +70,7 @@ app.use(expressValidator({
 app.use(expressWinston.logger({
     transports: [
         new winston.transports.Console({
-            json: false, //true for details
+            json: false, //true?
             colorize: true,
             timestamp: false // earlier true check
         })
@@ -89,9 +89,9 @@ app.use(flash())
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.use('/',index)
-app.use('/register',register)
-app.use('/profile',profile)
+app.use('/', index)
+app.use('/register', register)
+app.use('/profile', profile)
 
 app.use((req, res, next) => {
     __.notFound(res, 'Wrong page URL')

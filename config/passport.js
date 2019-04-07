@@ -10,7 +10,6 @@ module.exports = (passport) => {
                 if (!user) {
                     return done(null, false, { message: 'Unknown User' })
                 }
-    
                 User.comparePassword(password, user.password, (err, isMatch) => {
                     if (err) return err
                     if (isMatch) {
@@ -20,24 +19,23 @@ module.exports = (passport) => {
                     }
                 })
             })
-        }))
-    
+        }
+    ))
+
     passport.serializeUser( (user, done) => {
         var sessionUser = {
             _id: user._id,
             name: user.name,
-            username:user.username,
-            email:user.email,
-            dob:user.dob,
-            phone:user.phone,
-            gender:user.gender
+            username: user.username,
+            email: user.email,
+            phone: user.phone
         }
         done(null, user.id)
     })
     
     passport.deserializeUser( (id, done) => {
         User.getUserById(id, (err, user) => {
-            done(err, user);
+            done(err, user)
         })
     })   
 }

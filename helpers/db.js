@@ -13,10 +13,10 @@ class DatabaseClass {
             if (this.connection) {
                 return
             }
-            this.connection = mongoose.connect(mongodbURL,{
-                useNewUrlParser : true,
+            this.connection = mongoose.connect(mongodbURL, {
+                useNewUrlParser: true,
                 useCreateIndex: true,
-                useFindAndModify:false
+                useFindAndModify: false
             }).then(() => {
                 console.log('Mongo DB connection successful')
             })

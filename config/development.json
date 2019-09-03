@@ -6,9 +6,9 @@
     "corsAllowedDomains": "*",
     "secret": "secretbuddy",
     "Nexmo": {
-        "API_KEY": "f5a5d698",
-        "API_SECRET": "wduqfvzGJkG4cH1B",
-        "BRAND_NAME": "Amisha's 2FA"
+        "API_KEY": "",
+        "API_SECRET": "",
+        "BRAND_NAME": ""
     } 
 }
   
